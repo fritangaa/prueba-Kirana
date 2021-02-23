@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+    <html lang="en"><head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <script async="" src="https://www.google-analytics.com/analytics.js"></script><script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.min.js"></script>
+        <title>Kirana Labs</title>
+        <style>
+          .pdfobject-container { height: 500px;}
+          .pdfobject { border: 1px solid #666; }
+        </style>
+      </head>
+      <body>
+        <div class="container" style="padding:10px 10px;">
+          <h1>Prueba Kirana - Maximiliano Muñoz López</h1>
+          <div id="header">
+          <div class="well">
+              <div class="row">
+              <form class="form-inline">
+                  <div class="form-group">
+                    <label for="files">Abrir CSV:</label>
+                    <input type="file" id="files" class="form-control" accept=".csv" required="">
+                  </div>
+                  <div class="form-group">
+                   <button type="submit" id="submit-file" class="btn btn-primary">Filtrar tablas</button>
+                   </div>
+              </form>
+              </div>
+              <div class="row" <div="" id="parsed_csv_list">
+                  </div>
+              </div>
+          </div>
+          
+        
+      
+      
+      <script type="text/javascript">
+        $(document).ready(function(){
+          $('#submit-file').on("click",function(e){
+              e.preventDefault();
+              $('#files').parse({
+                  config: {
+                      delimiter: "auto",
+                      complete: displayHTMLTable,
+                  },
+                  before: function(file, inputElem)
+                  {
+                      //console.log("Parsing file...", file);
+                  },
+                  error: function(err, file)
+                  {
+                      //console.log("ERROR:", err, file);
+                  },
+                  complete: function()
+                  {
+                      //console.log("Done with all files");
+                  }
+              });
+          });
+          
+          function displayHTMLTable(results){
+              var table = "<table class='table'>";
+              var data = results.data;
+
+              emailRegex = /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+
+
+              var personas = [];
+
+              for(i=1;i<data.length;i++){
+                  var row = data[i];
+                  var cells = row.join(",").split(",");
+                  personas.push({nombre: cells[0],correo:cells[1],telefono:cells[2]});
+              }
+
+              var eliminaCorreos = personas.filter(function(persona) {
+                  return emailRegex.test(persona.correo);
+              });
+
+             var eliminaDuplicados = eliminaCorreos.filter((thing, index) => {
+                const _thing = JSON.stringify(thing);
+                return index === eliminaCorreos.findIndex(obj => {
+                    return JSON.stringify(obj) === _thing;
+                });
+             });
+
+             const busquedaNombre = eliminaDuplicados.reduce((acc, persona) => {
+                acc[persona.nombre] = ++acc[persona.nombre] || 0;
+                return acc
+            }, {});
+
+            const busquedaCorreo = eliminaDuplicados.reduce((acc, persona) => {
+                acc[persona.correo] = ++acc[persona.correo] || 0;
+                return acc
+            }, {});
+
+            const busquedaTelefono = eliminaDuplicados.reduce((acc, persona) => {
+                acc[persona.telefono] = ++acc[persona.telefono] || 0;
+                return acc
+            }, {});
+
+            
+              
+
+              table+= "<tr><td>Nombre</td><td>Correo Electrónico</td><td>Teléfono</td></tr>";
+              
+              eliminaDuplicados.map(function(persona) {
+                
+                
+                if (busquedaNombre[persona.nombre]=="") {   
+                    console.log(false);
+                    var parecidoNombre = false;
+                }else{
+                    var parecidoNombre = true;
+                    console.log(true);
+                }
+
+                if (busquedaCorreo[persona.correo]=="") {   
+                    console.log(false);
+                    var parecidoCorreo = false;
+                }else{
+                    var parecidoCorreo = true;
+                    console.log(true);
+                }
+
+                if (busquedaTelefono[persona.telefono]=="") {   
+                    console.log(false);
+                    var parecidoTelefono = false;
+                }else{
+                    var parecidoTelefono = true;
+                    console.log(true);
+                }
+
+                
+                if (parecidoNombre == true || parecidoCorreo == true|| parecidoTelefono == true) {
+                    table+= "<tr bgcolor='yellow'>";
+                table+= "<td>";
+                table+= persona.nombre;
+                table+= "</td>";
+                table+= "<td>";
+                table+= persona.correo;
+                table+= "</td>";
+                table+= "<td>";
+                table+= persona.telefono;
+                table+= "</td>";
+                table+= "</tr>"; 
+                table+= "</tr>";
+                }else{
+                    table+= "<tr>";
+                table+= "<td>";
+                table+= persona.nombre;
+                table+= "</td>";
+                table+= "<td>";
+                table+= persona.correo;
+                table+= "</td>";
+                table+= "<td>";
+                table+= persona.telefono;
+                table+= "</td>";
+                table+= "</tr>"; 
+                table+= "</tr>";
+                }
+                
+              });
+              
+              table+= "</table>";
+            
+
+              $("#parsed_csv_list").html(table);
+          }
+        });
+      </script>
+      </body>
+    </html>
